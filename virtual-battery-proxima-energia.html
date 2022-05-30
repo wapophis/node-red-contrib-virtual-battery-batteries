@@ -1,0 +1,27 @@
+<script type="text/javascript">
+    RED.nodes.registerType('virtual-battery-proxima-energia',{
+        category: 'network',
+        color: '#DAA520',
+        defaults: {
+            wastePercent:{value:"5",required:true},
+        }, 
+        inputs:1,
+        outputs:2,
+        icon: "feed.svg",
+        label: function() {
+            return this.name||"virtual-battery-proxima-energia";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="virtual-battery-proxima-energia">
+    <div class="form-row">
+        <label for="node-input-wastePerncet"><i class="fa fa-tag"></i> Porcentaje de pérdidas aplicable</label>
+        <input type="text" id="node-input-wastePerncet" placeholder="Waste Percent">
+    </div>
+
+</script>
+
+<script type="text/html" data-help-name="virtual-battery-proxima-energia">
+    <p>A node which make calcs to evaluate virtual battery from Próxima Energia </p>
+</script>

@@ -1,0 +1,24 @@
+{
+  "name": "@virtual-bat/batteries",
+  "version": "1.0.0",
+  "description": "Virtual Battery from proxima energia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luis Martínez",
+  "license": "ISC",
+  "keywords": ["node-red","virtual battery","proxima","energia"],
+  "node-red": {
+    "nodes": {
+      "virtual-battery-proxima-energia": "virtual-battery-proxima-energia.js"
+    }
+  },
+  "dependencies": {
+    "@js-joda/core": "^5.2.0",
+    "@js-joda/extra": "^0.8.0",
+    "@js-joda/timezone": "^2.12.0",
+    "axios": "^0.27.2",
+    "collections": "^5.1.13"
+  }
+}
