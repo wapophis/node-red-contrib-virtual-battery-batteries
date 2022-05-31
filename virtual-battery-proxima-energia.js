@@ -101,9 +101,12 @@ if(balanceNetoHorarioBuffer.length===0){
     }
 
     function _readFromContext(){
-        let recoveredBatBalance=nodeContext.get("payLoadBatteryBalance");
+        let recoveredBatBalance=JSON.parse(nodeContext.get("payLoadBatteryBalance"));
         if(recoveredBatBalance !== undefined){
-            batteryBalance=new BatteryBalance(recoveredBatBalance.imported,recoveredBatBalance.feeded,recoveredBatBalance.losed,recoveredBatBalance.load);
+            batteryBalance=new BatteryBalance(recoveredBatBalance.payLoadBatteryBalance.imported
+                ,recoveredBatBalance.payLoadBatteryBalance.feeded
+                ,recoveredBatBalance.payLoadBatteryBalance.losed
+                ,recoveredBatBalance.payLoadBatteryBalance.load);
         }else{
             batteryBalance=new BatteryBalance(0,0,0,0);
         }
