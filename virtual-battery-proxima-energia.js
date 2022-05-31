@@ -19,6 +19,9 @@ module.exports = function(RED) {
         nodeContext=this.context();
         battery=new VirtualBattery({wastePercent:config.wastePercent});
         _readFromContext();
+        if(batteryBalance===undefined){
+            _writeToContext();
+        }
        
         this.on('close', function() {
          _writeToContext();
@@ -62,6 +65,7 @@ module.exports = function(RED) {
             let sellPrice=battery.searchPriceSell(msg.payload.startAt).getPrice();
             let buyPrice=battery.searchPriceBuy(msg.payload.startAt).getPrice();
             msgBatteryBalance.payload=batteryBalance.get(buyPrice,sellPrice);
+            _writeToContext();
             node.send([msgBalanceNeto,msgBatteryBalance]);
             node.log("Sending data to both nodes BALANCE-NETO Y BATTERY balance"+JSON.stringify(msgBalanceNeto+"\n "+JSON.stringify(msgBatteryBalance)));
         }else{
@@ -101,12 +105,10 @@ if(balanceNetoHorarioBuffer.length===0){
     }
 
     function _readFromContext(){
-        let recoveredBatBalance=JSON.parse(nodeContext.get("payLoadBatteryBalance"));
+        let recoveredBatBalance=nodeContext.get("payLoadBatteryBalance");
         if(recoveredBatBalance !== undefined){
-            batteryBalance=new BatteryBalance(recoveredBatBalance.payLoadBatteryBalance.imported
-                ,recoveredBatBalance.payLoadBatteryBalance.feeded
-                ,recoveredBatBalance.payLoadBatteryBalance.losed
-                ,recoveredBatBalance.payLoadBatteryBalance.load);
+            let batBal=JSON.parse(recoveredBatBalance);
+            batteryBalance=new BatteryBalance(batBal.energyImported,batBal.energyFeeded,batBal.energyLossed,batBal.batteryLoad);
         }else{
             batteryBalance=new BatteryBalance(0,0,0,0);
         }
