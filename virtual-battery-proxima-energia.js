@@ -7,7 +7,8 @@ module.exports = function(RED) {
     var battery=null;
     var node=null;
     var balanceNetoHorarioBuffer=new SortedArray();
-    var batteryBalance=new BatteryBalance(0,0,0,0);
+    var batteryBalance;
+    var nodeContext;
 
     function VirtualBatteryProximaEnergiaNode(config) {
     
@@ -15,10 +16,12 @@ module.exports = function(RED) {
         
         RED.nodes.createNode(this,config);
         node = this;
+        nodeContext=this.context();
         battery=new VirtualBattery({wastePercent:config.wastePercent});
+        _readFromContext();
        
         this.on('close', function() {
-         
+         _writeToContext();
         });
 
         this.on('input',function(msg,send,done){
@@ -91,6 +94,20 @@ if(balanceNetoHorarioBuffer.length===0){
         }
         node.log("BalanceNetoHorario with prices is:"+JSON.stringify(balanceNetoHorario));
         return balanceNetoHorario;
+    }
+
+    function _writeToContext(){
+        nodeContext.set("payLoadBatteryBalance",JSON.stringify(batteryBalance));
+    }
+
+    function _readFromContext(){
+        let recoveredBatBalance=nodeContext.get("payLoadBatteryBalance");
+        if(recoveredBatBalance !== undefined){
+            batteryBalance=new BatteryBalance(recoveredBatBalance.imported,recoveredBatBalance.feeded,recoveredBatBalance.losed,recoveredBatBalance.load);
+        }else{
+            batteryBalance=new BatteryBalance(0,0,0,0);
+        }
+        
     }
 
     
