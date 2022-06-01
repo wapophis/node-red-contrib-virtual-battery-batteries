@@ -101,7 +101,7 @@ class BatteryBalance{
             this.energyImported+=balanceNeto.feeded;
         }else{
             this.energyFeeded+=balanceNeto.feeded;
-            this.energyLossed+=((5*this.energyFeeded)/100)*(pmhPrice/1000000);
+            this.energyLossed+=((5*this.energyFeeded)/100)*(this.pmhPrice/1000000);
         }
         this.batteryLoad+=balanceNeto.feededPrice;
     }
