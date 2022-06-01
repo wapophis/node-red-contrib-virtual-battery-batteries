@@ -101,18 +101,23 @@ class BatteryBalance{
             this.energyImported+=balanceNeto.feeded;
         }else{
             this.energyFeeded+=balanceNeto.feeded;
-            this.energyLossed+=(5*this.energyFeeded)/100;
+            this.energyLossed+=((5*this.energyFeeded)/100)*(pmhPrice/1000000);
         }
         this.batteryLoad+=balanceNeto.feededPrice;
     }
-    get(pvpcPrice,pmhPrice){
+
+    setPrices(pvpcPrice,pmhPrice){
+        this.pvpcPrice=pvpcPrice;
+        this.pmhPrice=pmhPrice;
+    }
+    get(){
         return {
             energyImported:this.energyImported,
             energyFeeded:this.energyFeeded,
-            energyLossed:this.energyLossed*(pmhPrice/1000000),
+            energyLossed:this.energyLossed,
             batteryLoad:this.batteryLoad,
-            pvpcPrice:pvpcPrice,
-            pmhPrice:pmhPrice
+            pvpcPrice:this.pvpcPrice,
+            pmhPrice:this.pmhPrice
         };
     }
 };

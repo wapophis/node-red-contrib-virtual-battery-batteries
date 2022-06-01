@@ -64,7 +64,8 @@ module.exports = function(RED) {
             batteryBalance.addBalaceNeto(balanceNeto);
             let sellPrice=battery.searchPriceSell(msg.payload.startAt).getPrice();
             let buyPrice=battery.searchPriceBuy(msg.payload.startAt).getPrice();
-            msgBatteryBalance.payload=batteryBalance.get(buyPrice,sellPrice);
+            batteryBalance.setPrices(sellPrice,buyPrice);
+            msgBatteryBalance.payload=batteryBalance.get();
             _writeToContext();
             node.send([msgBalanceNeto,msgBatteryBalance]);
             node.log("Sending data to both nodes BALANCE-NETO Y BATTERY balance"+JSON.stringify(msgBalanceNeto+"\n "+JSON.stringify(msgBatteryBalance)));
