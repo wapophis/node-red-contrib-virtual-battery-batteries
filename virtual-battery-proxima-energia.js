@@ -61,10 +61,10 @@ module.exports = function(RED) {
         msgBalanceNeto.payload=balanceNeto;
         /// PARA CONSOLIDAR
         if(balanceNeto.isConsolidable){
-            batteryBalance.addBalaceNeto(balanceNeto);
             let sellPrice=battery.searchPriceSell(msg.payload.startAt).getPrice();
             let buyPrice=battery.searchPriceBuy(msg.payload.startAt).getPrice();
             batteryBalance.setPrices(sellPrice,buyPrice);
+            batteryBalance.addBalaceNeto(balanceNeto);
             msgBatteryBalance.payload=batteryBalance.get();
             _writeToContext();
             node.send([msgBalanceNeto,msgBatteryBalance]);
