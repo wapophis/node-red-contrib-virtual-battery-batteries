@@ -3,75 +3,93 @@ const SortedArray = require("collections/sorted-array");
 const BatteryBalance=require("./virtual-battery").BatteryBalance;
 
 module.exports = function(RED) {
-    var looperTimeout=null;
-    var battery=null;
-    var node=null;
-    var balanceNetoHorarioBuffer=new SortedArray();
-    var batteryBalance;
-    var nodeContext;
+
 
     function VirtualBatteryProximaEnergiaNode(config) {
     
-     
+        var looperTimeout=null;
+        var battery=null;
+        var node=null;
+        var balanceNetoHorarioBuffer=new SortedArray();
+        var batteryBalance;
+        var nodeContext;
+        var pendingArray=[];
         
         RED.nodes.createNode(this,config);
         node = this;
         nodeContext=this.context();
         battery=new VirtualBattery({wastePercent:config.wastePercent});
-        _readFromContext();
+        batteryBalance=_readFromContext(nodeContext);
         if(batteryBalance===undefined){
-            _writeToContext();
+            _writeToContext(nodeContext,batteryBalance);
         }
        
         this.on('close', function() {
-         _writeToContext();
+         _writeToContext(nodeContext,batteryBalance);
         });
 
         this.on('input',function(msg,send,done){
            
-
+            let delay=500;
             if ("pricesTables" in msg.payload){
                 node.log( " CARGANDO CACHE");
                 battery.setCache(msg.payload.pricesTables);
                 node.status({fill:"green",shape:"dot",text:"Prices cache loaded"});
             }else{
+                if(!battery.cacheIsReady()){
+                    node.status({fill:"red",shape:"dot",text:"Prices not loaded"});
+                    /// STORE DATA THAT MUST BE CONSOLIDATED TO PROCESS LATER WHEN PRICES AVAILABLE
+                    if(msg.payload.isConsolidable){
+                        pendingArray.push(msg);
+                    }
+                    return;
+                }
 
-                processBalanceNetoHorario(msg);
+                if(pendingArray.length>0){
+                    pendingArray.forEach((item,index,array)=>{
+                        processBalanceNetoHorario(node,nodeContext,battery,item,batteryBalance);
+                    });
 
+                    pendingArray=[];
+                }
+
+                processBalanceNetoHorario(node,nodeContext,battery,msg,batteryBalance);
             }
 
         });
      
     }
 
-    function processBalanceNetoHorario(msg){
+    function processBalanceNetoHorario(node,nodeContext,battery,msg,batteryBalance){
         node.log( " PROCESANDO LECTURAS "+JSON.stringify(msg.payload));
-        if(!battery.cacheIsReady()){
-            node.status({fill:"red",shape:"dot",text:"Prices not loaded"});
-          //  balanceNetoHorarioBuffer.push({balanceNetoHorario:msg.payload});
-            setTimeout(processBalanceNetoHorario,500,msg);   
-            return;
-        }
+   
 
-        let balanceNeto=fillPricesIndicators(msg.payload);
+
+        let balanceNeto=fillPricesIndicators(node,battery,msg.payload);
       
-        var msgBalanceNeto={};
-        var msgBatteryBalance={};
+        if(balanceNeto!==null){
+            var msgBalanceNeto={};
+            var msgBatteryBalance={};
 
-        msgBalanceNeto.payload=balanceNeto;
-        /// PARA CONSOLIDAR
-        if(balanceNeto.isConsolidable){
-            let sellPrice=battery.searchPriceSell(msg.payload.startAt).getPrice();
-            let buyPrice=battery.searchPriceBuy(msg.payload.startAt).getPrice();
-            batteryBalance.setPrices(sellPrice,buyPrice);
-            batteryBalance.addBalaceNeto(balanceNeto);
-            msgBatteryBalance.payload=batteryBalance.get();
-            _writeToContext();
-            node.send([msgBalanceNeto,msgBatteryBalance]);
-            node.log("Sending data to both nodes BALANCE-NETO Y BATTERY balance"+JSON.stringify(msgBalanceNeto+"\n "+JSON.stringify(msgBatteryBalance)));
-        }else{
-            node.log("Sending data to first node BALANCE-NETO:"+JSON.stringify(msgBalanceNeto));
-            node.send([msgBalanceNeto,null]);
+            msgBalanceNeto.payload=balanceNeto;
+            /// PARA CONSOLIDAR
+            if(balanceNeto.isConsolidable){
+
+                let sellPrice=battery.searchPriceSell(msg.payload.startAt).getPrice();
+                let buyPrice=battery.searchPriceBuy(msg.payload.startAt).getPrice();
+                batteryBalance.setPrices(sellPrice,buyPrice);
+                batteryBalance.addBalaceNeto(balanceNeto);
+                msgBatteryBalance.payload=batteryBalance.get();
+                _writeToContext(nodeContext,batteryBalance);
+                node.send([msgBalanceNeto,msgBatteryBalance]);
+ //               node.log("Sending data to both nodes BALANCE-NETO Y BATTERY balance"+JSON.stringify(msgBalanceNeto+"\n "+JSON.stringify(msgBatteryBalance)));
+            }else{
+ //               node.log("Sending data to first node BALANCE-NETO:"+JSON.stringify(msgBalanceNeto));
+                node.send([msgBalanceNeto,null]);
+                node.status({fill:"green",shape:"dot",text:"Prices cache loaded"+"|"+msgBalanceNeto.payload.feededPrice});
+            }
+
+           // node.status({fill:"green",shape:"dot",text:"Last udpated "+balanceNeto.startAt});
         }
 
 
@@ -88,7 +106,11 @@ if(balanceNetoHorarioBuffer.length===0){
         */
     }
 
-    function fillPricesIndicators(balanceNetoHorario){
+    function fillPricesIndicators(node,battery,balanceNetoHorario){
+        if(battery.searchPriceSell(balanceNetoHorario.startAt)===undefined || battery.searchPriceBuy(balanceNetoHorario.startAt)===null){
+            node.status({fill:"red",shape:"dot",text:"There is no prices for date "+balanceNetoHorario.startAt.toString()});
+            return null;
+        }
         let sellPrice=battery.searchPriceSell(balanceNetoHorario.startAt).getPrice();
         let buyPrice=battery.searchPriceBuy(balanceNetoHorario.startAt).getPrice();
         node.log("Prices: Sell Vs Buy:"+(sellPrice)+" Vs "+(buyPrice)+"->"+((sellPrice/buyPrice)*100)+"%");
@@ -101,19 +123,20 @@ if(balanceNetoHorarioBuffer.length===0){
         return balanceNetoHorario;
     }
 
-    function _writeToContext(){
+    function _writeToContext(nodeContext,batteryBalance){
         nodeContext.set("payLoadBatteryBalance",JSON.stringify(batteryBalance));
     }
 
-    function _readFromContext(){
+    function _readFromContext(nodeContext){
         let recoveredBatBalance=nodeContext.get("payLoadBatteryBalance");
+        let batteryBalance=null;
         if(recoveredBatBalance !== undefined){
             let batBal=JSON.parse(recoveredBatBalance);
             batteryBalance=new BatteryBalance(batBal.energyImported,batBal.energyFeeded,batBal.energyLossed,batBal.batteryLoad);
         }else{
             batteryBalance=new BatteryBalance(0,0,0,0);
         }
-        
+        return batteryBalance;
     }
 
     
