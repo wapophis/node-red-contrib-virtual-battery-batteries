@@ -61,7 +61,7 @@ module.exports = function(RED) {
     }
 
     function processBalanceNetoHorario(node,nodeContext,battery,msg,batteryBalance){
-        node.log( " PROCESANDO LECTURAS "+JSON.stringify(msg.payload));
+        node.log( " PROCESANDO LECTURAS ");
    
 
 
@@ -119,7 +119,7 @@ if(balanceNetoHorarioBuffer.length===0){
         }else{
             balanceNetoHorario.feededPrice=balanceNetoHorario.feeded*(buyPrice/1000000);    
         }
-        node.log("BalanceNetoHorario with prices is:"+JSON.stringify(balanceNetoHorario));
+       // node.log("BalanceNetoHorario with prices is:"+JSON.stringify(balanceNetoHorario));
         return balanceNetoHorario;
     }
 
