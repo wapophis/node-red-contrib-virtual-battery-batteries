@@ -32,7 +32,7 @@ INPUTS:
                         "_end": "2022-07-01T00:00:00Z"
                     }
                 }
-
+ - virtual-battery-balance-neto-horario OUTPUT: With the data from the sum of the last hour readings. 
        
 
 OUTPUTS:
