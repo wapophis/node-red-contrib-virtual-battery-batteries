@@ -1,6 +1,6 @@
 {
   "name": "@virtualbat/batteries",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Virtual Battery from proxima energia",
   "main": "index.js",
   "scripts": {
