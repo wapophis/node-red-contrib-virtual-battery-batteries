@@ -1,12 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NodeBatteryProxima = void 0;
-const src_1 = require("@virtualbat/entities/dist/src");
-const BatteryBalance_1 = require("@virtualbat/entities/dist/src/BatteryBalance");
-class NodeBatteryProxima extends src_1.NodeBattery {
+const NodeBattery_js_1 = require("@virtualbat/entities/dist/src/NodeBattery.js");
+const PriceTables_1 = require("@virtualbat/entities/dist/src/PriceTables");
+const BatteryBalanceProxima_1 = require("./BatteryBalanceProxima");
+const VirtualBatProximaConfig_1 = require("./VirtualBatProximaConfig");
+class NodeBatteryProxima extends NodeBattery_js_1.NodeBattery {
     constructor(node, nodeConfig) {
         super(node, nodeConfig);
-        this.battery.setBalance(new BatteryBalance_1.ProximanEnergiaBatteryBalance(0, 0, 0, 0, nodeConfig.wastePercent));
+        this.setConfig(new VirtualBatProximaConfig_1.VirtualBatteryConfigProxima(nodeConfig, new PriceTables_1.PricesTables()));
+        this.battery.setBalance(new BatteryBalanceProxima_1.BatteryBalanceProxima(0, 0, 0, 0, new VirtualBatProximaConfig_1.VirtualBatteryConfigProxima(nodeConfig, new PriceTables_1.PricesTables())));
     }
     init() {
         throw new Error("Method not implemented.");
@@ -20,7 +23,9 @@ class NodeBatteryProxima extends src_1.NodeBattery {
     validateConfig() {
         throw new Error("Method not implemented.");
     }
-    afterSend(msg) { }
+    afterSend(msg) {
+        console.log("DATOS:" + JSON.stringify(msg));
+    }
     processBalanceNetoHorario(bnetoH) {
         this.node.log(" PROCESANDO LECTURAS ");
         // let balanceNeto=fillPricesIndicators(node,battery,msg.payload);
@@ -51,10 +56,11 @@ class NodeBatteryProxima extends src_1.NodeBattery {
         this.nodeContext.set("payLoadBatteryBalance", JSON.stringify(this.battery.getBalance().get()));
     }
     _readFromContext() {
-        let payloadSer = JSON.parse(this.nodeContext.get("payLoadBatteryBalance"));
-        let oval = new BatteryBalance_1.ProximanEnergiaBatteryBalance(payloadSer.imported, payloadSer.energyFeeded, payloadSer.energyLossed, payloadSer.batteryLoad, this.nodeConfig.wastePercent);
-        this.battery.setBalance(oval);
-        /*"{\"energyImported\":0,\"energyFeeded\":0,\"batteryLoad\":0,\"buyPrice\":null,\"sellPrice\":null,\"energyLossed\":0}"*/
+        if (this.nodeContext.get("payLoadBatteryBalance") !== undefined) {
+            let payloadSer = JSON.parse(this.nodeContext.get("payLoadBatteryBalance"));
+            let oval = BatteryBalanceProxima_1.BatteryBalanceProxima.of(payloadSer, this.nodeConfig);
+            this.battery.setBalance(oval);
+        }
     }
 }
 exports.NodeBatteryProxima = NodeBatteryProxima;

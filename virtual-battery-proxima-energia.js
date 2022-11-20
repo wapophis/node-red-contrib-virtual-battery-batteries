@@ -17,7 +17,10 @@ module.exports = function(RED) {
          nodeBattery._writeToContext();
         });
 
-        this.on('input',(msg,send,done)=>nodeBattery.onInput(msg,send,done));
+        this.on('input',(msg,send,done)=>{
+            nodeBattery.onInput(msg,send,done);
+            nodeBattery._writeToContext();
+        });
 
      
     }    

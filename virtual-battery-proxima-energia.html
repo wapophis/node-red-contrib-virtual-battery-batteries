@@ -3,7 +3,23 @@
         category: 'network',
         color: '#DAA520',
         defaults: {
-            wastePercent:{value:"5",required:true},
+            wastePercent:{value:"5",required:true,validate:RED.validators.number()},
+            potenciaContratadaP1:{value:0,required:true,validate:RED.validators.number()},
+            potenciaContratadaP2:{value:0,required:true,validate:RED.validators.number()},
+            cargosPotenciaP1:{value:3.175787,required:false,validate:RED.validators.number()},  // €/Kw año
+            cargosPotenciaP2:{value:0.204242,required:false,validate:RED.validators.number()},  // €/Kw año
+            cargosConsumoP1:{value:0.046622,required:false,validate:RED.validators.number()},   // €/Kwh
+            cargosConsumoP2:{value:0.009324,required:false,validate:RED.validators.number()},   // €/Kwh
+            cargosConsumoP3:{value:0.002331,required:false,validate:RED.validators.number()},   // €/Kwh
+            conmisionGestionConsumo:{value:0.095432,validate:RED.validators.number()},          // €/dia
+            conmisionGestionExcedentes:{value:0.095432,validate:RED.validators.number()},       // €/dia
+            conmisionGestionBatVirtual:{value:0.095432,validate:RED.validators.number()},       // €/dia
+            peajesPotenciaP1:{value:22.988256,validate:RED.validators.number()},                // €/Kw año               
+            peajesPotenciaP2:{value:0.938890,validate:RED.validators.number()},                 // €/Kw año
+            peajesConsumoP1:{value:0.027787,validate:RED.validators.number()},                  // €/Kwh
+            peajesConsumoP2:{value:0.019146,validate:RED.validators.number()},                  // €/Kwh
+            peajesConsumoP3:{value:0.000703,validate:RED.validators.number()},                  // €/Kwh
+            
         }, 
         inputs:1,
         outputs:2,
@@ -16,9 +32,92 @@
 
 <script type="text/html" data-template-name="virtual-battery-proxima-energia">
     <div class="form-row">
-        <label for="node-input-wastePercent"><i class="fa fa-tag"></i> Porcentaje de pérdidas aplicable</label>
+        <label for="node-input-wastePercent"><i class="fa fa-tag"></i> Porcentaje de pérdidas aplicable %</label>
         <input type="text" id="node-input-wastePercent" placeholder="Waste Percent">
     </div>
+
+    <div class="form-row">
+        <label for="node-input-potenciaContratadaP1"><i class="fa fa-tag"></i> Potencia contratada Horario Valle KwH</label>
+        <input type="text" id="node-input-potenciaContratadaP1" placeholder="Potencia Contratada Valle">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-potenciaContratadaP2"><i class="fa fa-tag"></i> Potencia contratada Horario Punta KwH</label>
+        <input type="number" step="any" id="node-input-potenciaContratadaP2" placeholder="Potencia Contratada Punta">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-cargosPotenciaP1"><i class="fa fa-tag"></i> Cargos por potencia P1 €/Kw año</label>
+        <input type="number" step="any" id="node-input-cargosPotenciaP1" placeholder="3.175787" value="">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-cargosPotenciaP2"><i class="fa fa-tag"></i> Cargos por potencia P2 €/Kw año</label>
+        <input type="text" id="node-input-cargosPotenciaP2" placeholder="Cargos por Potencia P2 ">
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-input-peajesPotenciaP1"><i class="fa fa-tag"></i> Peajes por potencia P1 €/Kw año</label>
+        <input type="text" id="node-input-peajesPotenciaP1" placeholder="Peajes por Potencia P1">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-peajesPotenciaP2"><i class="fa fa-tag"></i> Peajes por potencia P2 €/Kw año</label>
+        <input type="text" id="node-input-peajesPotenciaP2" placeholder="Peajes por Potencia P2 ">
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-input-cargosConsumoP1"><i class="fa fa-tag"></i> Cargos por Consumo P1 €/Kwh</label>
+        <input type="text" id="node-input-cargosConsumoP1" placeholder="Cargos por Consumo P1">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-cargosConsumoP2"><i class="fa fa-tag"></i> Cargos por Consumo P2 €/Kwh</label>
+        <input type="text" id="node-input-cargosConsumoP2" placeholder="Cargos por Consumo P2">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-cargosConsumoP3"><i class="fa fa-tag"></i> Cargos por Consumo P3 €/Kwh</label>
+        <input type="text" id="node-input-cargosConsumoP3" placeholder="Cargos por Consumo P3">
+    </div>
+
+
+
+
+    <div class="form-row">
+        <label for="node-input-peajesConsumoP1"><i class="fa fa-tag"></i> Peajes por Consumo P1 €/Kwh</label>
+        <input type="text" id="node-input-peajesConsumoP1" placeholder="Peajes por Consumo P1">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-peajesConsumoP2"><i class="fa fa-tag"></i> Peajes por Consumo P2 €/Kwh</label>
+        <input type="text" id="node-input-peajesConsumoP2" placeholder="Peajes por Consumo P2">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-peajesConsumoP3"><i class="fa fa-tag"></i> Peajes por Consumo P3 €/Kwh</label>
+        <input type="text" id="node-input-peajesConsumoP3" placeholder="Peajes por Consumo P3">
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-input-conmisionGestionConsumo"><i class="fa fa-tag"></i> Comisión por gestion del consumo diario</label>
+        <input type="text" id="node-input-conmisionGestionConsumo" placeholder="conmisionGestionConsumo">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-conmisionGestionExcedentes"><i class="fa fa-tag"></i> Comisión por gestion de excedentes diario</label>
+        <input type="text" id="node-input-conmisionGestionExcedentes" placeholder="conmisionGestionExcedentes">
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-input-conmisionGestionBatVirtual"><i class="fa fa-tag"></i> Comisión por gestion de Bateria Virtual diario</label>
+        <input type="text" id="node-input-conmisionGestionBatVirtual" placeholder="conmisionGestionBatVirtual">
+    </div>
+
 
 </script>
 

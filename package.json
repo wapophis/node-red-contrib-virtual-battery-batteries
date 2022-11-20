@@ -1,6 +1,6 @@
 {
   "name": "@virtualbat/batteries",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Virtual Battery from proxima energia",
   "main": "index.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "@js-joda/extra": "^0.8.0",
     "@js-joda/timezone": "^2.12.0",
     "@types/node-red": "^1.2.1",
-    "@virtualbat/entities": "file:../node-red-contrib-virtual-battery-entities",
+    "@virtualbat/entities": "1.0.1",
     "axios": "^0.27.2",
     "collections": "^5.1.13",
     "red-contrib-virtual-battery-entities": "file:../node-red-contrib-virtual-battery-entities"

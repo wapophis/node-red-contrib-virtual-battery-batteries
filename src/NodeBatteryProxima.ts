@@ -1,27 +1,34 @@
-import { BalanceNetoHorario, NodeBattery } from "@virtualbat/entities/dist/src";
-import { VirtualBattery, VirtualBatteryConfig } from "@virtualbat/entities/dist/src";
-import { BatteryBalanceCounter, ProximanEnergiaBatteryBalance } from "@virtualbat/entities/dist/src/BatteryBalance";
+import { BalanceNetoHorario } from "@virtualbat/entities/dist/src/BalanceNetoHorario.js";
+import {  NodeBattery } from "@virtualbat/entities/dist/src/NodeBattery.js";
+import { PricesTables } from "@virtualbat/entities/dist/src/PriceTables";
+import { VirtualBattery, VirtualBatteryConfig } from "@virtualbat/entities/dist/src/VirtualBattery.js";
 
-export class NodeBatteryProxima extends NodeBattery<ProximanEnergiaBatteryBalance>{
+import { BatteryBalanceProxima } from "./BatteryBalanceProxima";
+import { VirtualBatteryConfigProxima } from "./VirtualBatProximaConfig";
+
+export class NodeBatteryProxima extends NodeBattery<BatteryBalanceProxima>{
    
     constructor(node:any,nodeConfig:any){
       super(node,nodeConfig);
-      this.battery.setBalance(new ProximanEnergiaBatteryBalance(0,0,0,0,nodeConfig.wastePercent));
+      this.setConfig(new VirtualBatteryConfigProxima(nodeConfig,new PricesTables()));
+      this.battery.setBalance(new BatteryBalanceProxima(0,0,0,0,new VirtualBatteryConfigProxima(nodeConfig,new PricesTables())));
     }
 
-    init(): VirtualBattery<ProximanEnergiaBatteryBalance> {
+    init(): VirtualBattery<BatteryBalanceProxima> {
         throw new Error("Method not implemented.");
     }
     onClose(): boolean {
         throw new Error("Method not implemented.");
     }
-    onInput(msg:any,send:any,done:any): VirtualBattery<ProximanEnergiaBatteryBalance> {
+    onInput(msg:any,send:any,done:any): VirtualBattery<BatteryBalanceProxima> {
         return super.onInput(msg,send,done);
     }
     validateConfig(): boolean {
         throw new Error("Method not implemented.");
     }
-    afterSend(msg:any){}
+    afterSend(msg:any){
+        console.log("DATOS:"+JSON.stringify(msg));
+    }
 
     processBalanceNetoHorario(bnetoH:BalanceNetoHorario): void {
         this.node.log( " PROCESANDO LECTURAS ");
@@ -62,10 +69,12 @@ export class NodeBatteryProxima extends NodeBattery<ProximanEnergiaBatteryBalanc
     }
 
     _readFromContext(){
+        if(this.nodeContext.get("payLoadBatteryBalance")!==undefined){
         let payloadSer=JSON.parse(this.nodeContext.get("payLoadBatteryBalance"));
-        let oval:ProximanEnergiaBatteryBalance=new ProximanEnergiaBatteryBalance(payloadSer.imported,payloadSer.energyFeeded,payloadSer.energyLossed,payloadSer.batteryLoad,this.nodeConfig.wastePercent);
+        let oval:BatteryBalanceProxima=BatteryBalanceProxima.of(payloadSer,this.nodeConfig);
         this.battery.setBalance(oval);
-        /*"{\"energyImported\":0,\"energyFeeded\":0,\"batteryLoad\":0,\"buyPrice\":null,\"sellPrice\":null,\"energyLossed\":0}"*/
+        }
+        
     }
 
 
