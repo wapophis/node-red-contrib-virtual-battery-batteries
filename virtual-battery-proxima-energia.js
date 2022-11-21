@@ -10,7 +10,7 @@ module.exports = function(RED) {
         nodeBattery._readFromContext();
 
         nodeBattery.afterSend=function(msg){
-            console.log({sended:msg});
+            console.log(JSON.stringify(msg));
         };
        
         this.on('close', function() {

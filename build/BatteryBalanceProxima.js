@@ -24,8 +24,10 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
         this.batteryLoad += this.applyPeajesPorConsumo(balanceNeto);
         this.batteryLoad += this.applyCargosPorConsumo(balanceNeto);
         this.batteryLoad += this.applyCostesGestionPorDia(balanceNeto);
-        this.batteryLoad += this.applyPorcentajePerdidas(balanceNeto);
-        this.energyLossed += ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
+        if (balanceNeto.getFeeded() > 0) {
+            this.batteryLoad += this.applyPorcentajePerdidas(balanceNeto);
+            this.energyLossed += ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
+        }
     }
     applyPeajesPorPotencia(balanceNeto) {
         let mult = this.batteryConfig.getPeajePotencia(this._peajePeriod(balanceNeto.startTime)) / (365 * 24);

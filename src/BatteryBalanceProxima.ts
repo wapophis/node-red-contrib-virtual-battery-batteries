@@ -37,9 +37,11 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
         this.batteryLoad+=this.applyPeajesPorConsumo(balanceNeto);
         this.batteryLoad+=this.applyCargosPorConsumo(balanceNeto);
         this.batteryLoad+=this.applyCostesGestionPorDia(balanceNeto);
-        this.batteryLoad+=this.applyPorcentajePerdidas(balanceNeto);
-
-        this.energyLossed+=((this.batteryConfig.wastePercent*this.energyFeeded)/100);
+        
+        if(balanceNeto.getFeeded()>0){
+            this.batteryLoad+=this.applyPorcentajePerdidas(balanceNeto);
+            this.energyLossed+=((this.batteryConfig.wastePercent*this.energyFeeded)/100);
+        }
         
     }
 
