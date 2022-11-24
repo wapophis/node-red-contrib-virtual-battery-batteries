@@ -40,7 +40,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
         
         if(balanceNeto.getFeeded()>0){
             this.batteryLoad+=this.applyPorcentajePerdidas(balanceNeto);
-            this.energyLossed+=((this.batteryConfig.wastePercent*this.energyFeeded)/100);
+            this.energyLossed=((this.batteryConfig.wastePercent*this.energyFeeded)/100);
         }
         
     }
@@ -60,7 +60,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
     applyPeajesPorConsumo(balanceNeto:BalanceNetoHorario):number{
         let mult:number=this.batteryConfig.getPeajesConsumo(this._consumoPeriod(balanceNeto.startTime));
         if(this.energyFeeded<0){
-             this.peajesPorConsumoSum+=mult*(this.energyFeeded/1000);
+             this.peajesPorConsumoSum=mult*(this.energyFeeded/1000);
              return mult*this.energyFeeded*-1;
         }
         return 0;
@@ -69,7 +69,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
     applyCargosPorConsumo(balanceNeto:BalanceNetoHorario):number{
         let mult:number=this.batteryConfig.getCargosConsumo(this._consumoPeriod(balanceNeto.startTime));
         if(this.energyFeeded<0){
-             this.cargosPorConsumoSum+=mult*(this.energyFeeded/1000);
+             this.cargosPorConsumoSum=mult*(this.energyFeeded/1000);
              return mult*this.energyFeeded*-1;
         }
         return 0;
@@ -90,7 +90,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
     applyPorcentajePerdidas(balanceNeto:BalanceNetoHorario):number{
         if(this.sellPrice!==null){
             let cost=((this.batteryConfig.wastePercent*this.energyFeeded)/100)*(this.sellPrice.getPrice()/1000000);
-            this.costeLossed+=cost;
+            this.costeLossed=cost;
             return cost*-1;
         }
         return 0;
