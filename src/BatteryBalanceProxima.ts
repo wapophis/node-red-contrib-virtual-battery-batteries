@@ -20,6 +20,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
     cargosPorConsumoSum: any;
     costesGestionSum: any;
     costeLossed: any;
+    originalBatLoad:any;
 
     
     
@@ -32,6 +33,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
 
     addBalaceNeto(balanceNeto:BalanceNetoHorario){
         super.addBalaceNeto(balanceNeto);
+        this.originalBatLoad=this.batteryLoad;
         this.batteryLoad+=this.applyPeajesPorPotencia(balanceNeto);
         this.batteryLoad+=this.applyCargosPorPotencia(balanceNeto);
         this.batteryLoad+=this.applyPeajesPorConsumo(balanceNeto);
@@ -107,6 +109,7 @@ export class BatteryBalanceProxima extends BatteryBalanceCounter{
         oVal.cargosPorConsumoSum=this.cargosPorConsumoSum;
         oVal.costesGestionSum=this.costesGestionSum;
         oVal.costeLossed=this.costeLossed;
+        oVal.originalBatLoad=this.originalBatLoad;
         return oVal;
     }
 

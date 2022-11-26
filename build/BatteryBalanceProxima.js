@@ -19,6 +19,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     }
     addBalaceNeto(balanceNeto) {
         super.addBalaceNeto(balanceNeto);
+        this.originalBatLoad = this.batteryLoad;
         this.batteryLoad += this.applyPeajesPorPotencia(balanceNeto);
         this.batteryLoad += this.applyCargosPorPotencia(balanceNeto);
         this.batteryLoad += this.applyPeajesPorConsumo(balanceNeto);
@@ -26,7 +27,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
         this.batteryLoad += this.applyCostesGestionPorDia(balanceNeto);
         if (balanceNeto.getFeeded() > 0) {
             this.batteryLoad += this.applyPorcentajePerdidas(balanceNeto);
-            this.energyLossed += ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
+            this.energyLossed = ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
         }
     }
     applyPeajesPorPotencia(balanceNeto) {
@@ -42,7 +43,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     applyPeajesPorConsumo(balanceNeto) {
         let mult = this.batteryConfig.getPeajesConsumo(this._consumoPeriod(balanceNeto.startTime));
         if (this.energyFeeded < 0) {
-            this.peajesPorConsumoSum += mult * (this.energyFeeded / 1000);
+            this.peajesPorConsumoSum = mult * (this.energyFeeded / 1000);
             return mult * this.energyFeeded * -1;
         }
         return 0;
@@ -50,7 +51,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     applyCargosPorConsumo(balanceNeto) {
         let mult = this.batteryConfig.getCargosConsumo(this._consumoPeriod(balanceNeto.startTime));
         if (this.energyFeeded < 0) {
-            this.cargosPorConsumoSum += mult * (this.energyFeeded / 1000);
+            this.cargosPorConsumoSum = mult * (this.energyFeeded / 1000);
             return mult * this.energyFeeded * -1;
         }
         return 0;
@@ -68,7 +69,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     applyPorcentajePerdidas(balanceNeto) {
         if (this.sellPrice !== null) {
             let cost = ((this.batteryConfig.wastePercent * this.energyFeeded) / 100) * (this.sellPrice.getPrice() / 1000000);
-            this.costeLossed += cost;
+            this.costeLossed = cost;
             return cost * -1;
         }
         return 0;
@@ -82,6 +83,7 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
         oVal.cargosPorConsumoSum = this.cargosPorConsumoSum;
         oVal.costesGestionSum = this.costesGestionSum;
         oVal.costeLossed = this.costeLossed;
+        oVal.originalBatLoad = this.originalBatLoad;
         return oVal;
     }
     static of(payloadSer, nodeConfig) {
