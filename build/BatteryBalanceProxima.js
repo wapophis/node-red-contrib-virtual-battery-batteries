@@ -14,6 +14,12 @@ const PriceTables_js_1 = require("@virtualbat/entities/dist/src/PriceTables.js")
 class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     constructor(imported, feeded, losed, load, batteryConfig) {
         super(imported, feeded, load);
+        this.peajesPorPotenciaInc = 0;
+        this.cargosPorPotenciaInc = 0;
+        this.peajesPorConsumoInc = 0;
+        this.cargosPorConsumoInc = 0;
+        this.costesGestionInc = 0;
+        this.costeLossedInc = 0;
         this.energyLossed = losed;
         this.batteryConfig = batteryConfig;
     }
@@ -27,23 +33,26 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
         this.batteryLoad += this.applyCostesGestionPorDia(balanceNeto);
         if (balanceNeto.getFeeded() > 0) {
             this.batteryLoad += this.applyPorcentajePerdidas(balanceNeto);
-            this.energyLossed = ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
+            this.energyLossed = -1 * ((this.batteryConfig.wastePercent * this.energyFeeded) / 100);
         }
     }
     applyPeajesPorPotencia(balanceNeto) {
         let mult = this.batteryConfig.getPeajePotencia(this._peajePeriod(balanceNeto.startTime)) / (365 * 24);
-        this.peajesPorPotenciaSum += mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
+        this.peajesPorPotenciaInc = mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
+        this.peajesPorPotenciaSum += this.peajesPorPotenciaInc;
         return mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
     }
     applyCargosPorPotencia(balanceNeto) {
         let mult = this.batteryConfig.getCargosPotencia(this._peajePeriod(balanceNeto.startTime)) / (365 * 24);
-        this.cargosPorPotenciaSum += mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
+        this.cargosPorPotenciaInc = mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
+        this.cargosPorPotenciaSum += this.cargosPorPotenciaInc;
         return mult * this.batteryConfig.getPotenciaContratada(this._peajePeriod(balanceNeto.startTime)) * -1;
     }
     applyPeajesPorConsumo(balanceNeto) {
         let mult = this.batteryConfig.getPeajesConsumo(this._consumoPeriod(balanceNeto.startTime));
         if (this.energyFeeded < 0) {
-            this.peajesPorConsumoSum = mult * (this.energyFeeded / 1000);
+            this.peajesPorConsumoInc = mult * (this.energyFeeded / 1000);
+            this.peajesPorConsumoSum += this.peajesPorConsumoInc;
             return mult * this.energyFeeded * -1;
         }
         return 0;
@@ -51,7 +60,8 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     applyCargosPorConsumo(balanceNeto) {
         let mult = this.batteryConfig.getCargosConsumo(this._consumoPeriod(balanceNeto.startTime));
         if (this.energyFeeded < 0) {
-            this.cargosPorConsumoSum = mult * (this.energyFeeded / 1000);
+            this.cargosPorConsumoInc = mult * (this.energyFeeded / 1000);
+            this.cargosPorConsumoSum += this.cargosPorConsumoInc;
             return mult * this.energyFeeded * -1;
         }
         return 0;
@@ -68,9 +78,10 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
     }
     applyPorcentajePerdidas(balanceNeto) {
         if (this.sellPrice !== null) {
-            let cost = ((this.batteryConfig.wastePercent * this.energyFeeded) / 100) * (this.sellPrice.getPrice() / 1000000);
-            this.costeLossed = cost;
-            return cost * -1;
+            let cost = (this.energyLossed * this.sellPrice.getPrice()) / 1000000;
+            this.costeLossedInc = cost;
+            this.costeLossed += cost;
+            return this.costeLossed;
         }
         return 0;
     }
@@ -78,11 +89,17 @@ class BatteryBalanceProxima extends BatteryBalance_js_1.BatteryBalanceCounter {
         let oVal = super.get();
         oVal.energyLossed = this.energyLossed;
         oVal.peajesPorPotenciaSum = this.peajesPorPotenciaSum;
+        oVal.peajesPorPotenciaInc = this.peajesPorPotenciaInc;
         oVal.cargosPorPotenciaSum = this.cargosPorPotenciaSum;
+        oVal.cargosPorPotenciaInc = this.cargosPorPotenciaInc;
         oVal.peajesPorConsumoSum = this.peajesPorConsumoSum;
+        oVal.peajesPorConsumoInc = this.peajesPorConsumoInc;
         oVal.cargosPorConsumoSum = this.cargosPorConsumoSum;
+        oVal.cargosPorConsumoInc = this.cargosPorConsumoInc;
         oVal.costesGestionSum = this.costesGestionSum;
+        oVal.costesGestionInc = this.costesGestionInc;
         oVal.costeLossed = this.costeLossed;
+        oVal.costesLossedInc = this.costeLossedInc;
         oVal.originalBatLoad = this.originalBatLoad;
         return oVal;
     }
